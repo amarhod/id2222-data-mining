@@ -2,8 +2,11 @@ import re
 
 
 class Shingle():
+    """Creates a set of hashed k-shingles from a text file for a given
+       file path and k
+    """
     def __init__(self, k, document_path) -> None:
-        self.set = set()
+        shingle_set = set()
 
         with open(document_path) as f:
             txt = f.read()
@@ -12,11 +15,11 @@ class Shingle():
 
         index_start = 0
         while(index_start + k < len(txt)):
-            self.set.add(txt[index_start:index_start + k])
+            shingle_set.add(txt[index_start:index_start + k])
             index_start += 1
+        self.set = sorted(map(hash, shingle_set))
 
 
 if __name__ == '__main__':
     shingle = Shingle(10, 'data/sport_articles/Text0001.txt')
-    shingles_sorted_list = sorted(list(shingle.set))
-    print(shingles_sorted_list)
+    print(shingle.set)
