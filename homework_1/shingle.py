@@ -5,7 +5,7 @@ class Shingle():
     """Creates a set of hashed k-shingles from a text file for a given
        file path and k
     """
-    def __init__(self, k, document_path) -> None:
+    def __init__(self, k: int, document_path: str) -> None:
         shingle_set = set()
 
         with open(document_path, encoding='latin1') as f:
@@ -17,7 +17,7 @@ class Shingle():
         while(index_start + k < len(txt)):
             shingle_set.add(txt[index_start:index_start + k])
             index_start += 1
-        self.set = sorted(map(hash, shingle_set))
+        self.set = set(sorted(map(hash, shingle_set)))
 
 
 if __name__ == '__main__':
