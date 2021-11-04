@@ -8,7 +8,7 @@ class Shingle():
     def __init__(self, k, document_path) -> None:
         shingle_set = set()
 
-        with open(document_path) as f:
+        with open(document_path, encoding='latin1') as f:
             txt = f.read()
         txt = re.sub(r'\n|\t', ' ', txt)
         txt = re.sub(r'\s{2,}', ' ', txt)
