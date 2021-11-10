@@ -29,7 +29,7 @@ class Shingle():
 
 
 if __name__ == '__main__':
-		shingle = Shingle(5, 100, './tests/text_1.txt')
+		shingle = Shingle(5, './tests/text_1.txt')
 		print(shingle.shingle_set)
 		print(shingle.hashed_shingle_set)
 		print(shingle.mapping)
