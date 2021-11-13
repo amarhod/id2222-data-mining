@@ -16,6 +16,7 @@ class Shingle():
             txt = f.read()
             txt = re.sub(r'\n|\t', ' ', txt)
             txt = re.sub(r'\s{2,}', ' ', txt)
+            txt = txt.lower()
 
         index_start = 0
         while(index_start + k <= len(txt)):
