@@ -3,7 +3,7 @@ import random
 import pandas as pd
 
 
-class Mini_Hash:
+class MiniHash:
     def __init__(self, shingles, n):
         self.shingles_hashed = [document.hashed_shingle_set for document in shingles]
         self.shingles_str = [document.shingle_set for document in shingles]
@@ -27,48 +27,48 @@ class Mini_Hash:
     def get_hashes(self):
         return self.mini_hash(self.shingles_hashed, self.n)
 
-    def get_signature(self, shingles, a, b, prime, number_of_hash_functions):
-        min_hashes = []
-        for i in range(number_of_hash_functions):
-            min_hash = prime + 1
-            for j in range(len(shingles)):
-                if shingles[j] == 1:
-                    shingle_value = self.mapping[j]
-                    hash = (a[i]*shingle_value + b[i]) % prime
-                    if hash < min_hash:
-                        min_hash = hash
-            min_hashes.append(min_hash)
-        return min_hashes
+    def get_signature(self, a, b, prime, characteristic_matrix, n):
+        """
+        Given as the lists a,b containing the coeficients and constants of the hash functions, a prime number, 
+        characteristic matrix of size y x z, return signature matrix of size n x z
 
-    def find_ones(self, arr):
-        return np.where(arr == 1)[0]
+        Args:
+            a (list): the coeficients for the hash functions. a[0] is the coeficient for hashfunction 0
+            b (list): the constants for the hash functions. b[0] is the constant for hashfunction 0
+            prime (int): a prime number
+            characteristic_matrix (matrix): matrix of size y x z where y is the number of unique shingles and z is the
+            number of documnets
+            n (int): number of hashfunctions
 
-    def signature(self, a, b, prime, characteristic_matrix, n):
+        Returns:
+            [matrix]: signature matrix of size n x z
+        """
         sig_matrix = np.full((n, len(characteristic_matrix.T)), np.inf)
-        print(characteristic_matrix)
-        print(self.df)
-        print(f"a coeficients: {a}")
-        print(f"b coeficients: {b}")
-        for i in range(len(characteristic_matrix)):
+        for row in range(len(characteristic_matrix)):
             hash_values = []
             for j in range(n):
-                hash_values.append((a[j]*j + b[j]) % prime)
-            indeces = self.find_ones(characteristic_matrix[i])
-            print(f"indeces for {i}: {indeces}")
-            for k in range(len(sig_matrix)):
-                for index in indeces:
-                    if hash_values[k] < sig_matrix[k][index]:
-                        sig_matrix[k][index] = hash_values[k]
-                        print(sig_matrix)
-        print(sig_matrix)
+                val = self.mapping[row]  # should it be the shingle value or the row number?
+                hash_value = (a[j]*val + b[j]) % prime
+                hash_values.append(hash_value)
+            for col in range(len(characteristic_matrix.T)):
+                if characteristic_matrix[row][col] == 1:
+                    for m in range(n):
+                        if hash_values[m] < sig_matrix[m][col]:
+                            sig_matrix[m, col] = hash_values[m]
         return sig_matrix
 
+    def get_random_numbers(self, n):
+        """Generates a list of n unique numbers
 
-    def get_random_numbers(self, number_of_hash_functions):
-        # random.seed(150) # adding seed gives the same output all the time, but accuracy depends on seed?
+        Args:
+            n (int): [description]
+
+        Returns:
+            [list]: a list of n unique numbers
+        """
         coeficients = []
-        k = number_of_hash_functions
-        max_number = 2**32 - 1
+        k = n
+        max_number = max(self.shingle_universe_hashed)
         while k > 0:
             number = random.randint(0, max_number)
             while number in coeficients:
@@ -91,9 +91,10 @@ class Mini_Hash:
             shingle_list (list): [description]
 
         Returns:
-            sig_matrix: signature matrix n x b matrix where n is the number of hash functions applied,
-            and b is the number of documents
-            characteristic_matrix:
+            sig_matrix: signature matrix n x d matrix where n is the number of hash functions applied,
+            and d is the number of documents
+            characteristic_matrix: the characterisitc matrix of size s x d where s is the number of unique shingles
+            and d is the number of documents. Each column represents a document while each row represents a shingle
         """
         print(f"Number of hash functions: {number_of_hash_functions}")
         shingle_universe = self.shingle_universe_hashed  # using list to make sure the shingles do not get rearanged
@@ -110,13 +111,7 @@ class Mini_Hash:
         df2 = pd.DataFrame(chara_matrix_str)
         df3 = pd.DataFrame(np.array(shingle_universe))
         self.df = pd.concat([df3, df2, df1], axis=1)
-        
-        #a = self.get_random_numbers(number_of_hash_functions)
-        #b = self.get_random_numbers(number_of_hash_functions)
-        a = [1,2]
-        b = [3,4]
-        #for col in characteristic_matrix.T:
-            #signature = self.get_signature(col, a, b, self.prime, number_of_hash_functions)
-            #sig_matrix.append(signature)
-        sig_matrix = self.signature(a, b, self.prime, characteristic_matrix, number_of_hash_functions)
+        a = self.get_random_numbers(number_of_hash_functions)
+        b = self.get_random_numbers(number_of_hash_functions)
+        sig_matrix = self.get_signature(a, b, self.prime, characteristic_matrix, number_of_hash_functions)
         return sig_matrix, characteristic_matrix
