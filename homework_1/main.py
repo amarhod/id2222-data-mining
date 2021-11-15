@@ -1,6 +1,5 @@
 import os
-from compare_sets import compare_signatures, compare_vectors
-from lhs import LHS
+from compare_sets import compare_signatures, compare_vectors, jaccard_similarity
 from shingle import Shingle
 from min_hashing import MiniHash
 import argparse
@@ -19,20 +18,23 @@ def main():
     document_folder = args.folder
     n, k = args.signature_size, args.shingle_size
     shingles = []
+    document_names = []
     for document_name in os.listdir(document_folder):
         if document_name.endswith('.txt'):
+            document_names.append(document_name)
             file_path = document_folder + '/' + document_name
             shingle_obj = Shingle(k, file_path)
             shingles.append(shingle_obj)
 
     mini_hash = MiniHash(shingles, n)
     sig_matrix, characterisitc_matrix = mini_hash.get_hashes()
-    similarity = compare_signatures(sig_matrix.T[0], sig_matrix.T[1])
-    similarity_from_char_matrix = compare_vectors(characterisitc_matrix.T[0], characterisitc_matrix.T[1])
-    print(f"Similarity from signatures: {similarity}")
-    print(f"Similarity from characteristic matrix: {similarity_from_char_matrix}")
-    lhs = LHS(threashold=0.2, sig_matrix=sig_matrix)
-    lhs.find_candidates()
+    for i in range(sig_matrix.shape[1]):
+        for j in range(i, sig_matrix.shape[1]):
+            if i != j:
+                similarity = compare_signatures(sig_matrix.T[i], sig_matrix.T[j])
+                similarity_jaccard = jaccard_similarity(set(shingles[i].shingle_set), set(shingles[j].shingle_set))
+                print(f"{document_names[i]} - {document_names[j]}: Jaccard shingle vs signature similarity "
+                      f"{round(similarity_jaccard, 2)} - {similarity}")
 
 
 if __name__ == '__main__':
