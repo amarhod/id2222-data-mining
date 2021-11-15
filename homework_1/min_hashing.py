@@ -29,7 +29,7 @@ class MiniHash:
 
     def get_signature(self, a, b, prime, characteristic_matrix, n):
         """
-        Given as the lists a,b containing the coeficients and constants of the hash functions, a prime number, 
+        Given the lists a,b containing the coeficients and constants of the hash functions, a prime number,
         characteristic matrix of size y x z, return signature matrix of size n x z
 
         Args:
