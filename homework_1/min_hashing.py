@@ -96,7 +96,7 @@ class MiniHash:
             characteristic_matrix: the characterisitc matrix of size s x d where s is the number of unique shingles
             and d is the number of documents. Each column represents a document while each row represents a shingle
         """
-        print(f"Number of hash functions: {number_of_hash_functions}")
+        # print(f"Number of hash functions: {number_of_hash_functions}")
         shingle_universe = self.shingle_universe_hashed  # using list to make sure the shingles do not get rearanged
         characteristic_matrix = np.zeros((len(shingle_universe), len(shingle_list)))
         chara_matrix_str = np.empty((len(shingle_universe), 1), dtype=object)
