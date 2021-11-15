@@ -1,5 +1,6 @@
 import os
 from compare_sets import compare_signatures, compare_vectors
+from lhs import LHS
 from shingle import Shingle
 from min_hashing import MiniHash
 import argparse
@@ -30,6 +31,8 @@ def main():
     similarity_from_char_matrix = compare_vectors(characterisitc_matrix.T[0], characterisitc_matrix.T[1])
     print(f"Similarity from signatures: {similarity}")
     print(f"Similarity from characteristic matrix: {similarity_from_char_matrix}")
+    lhs = LHS(threashold=0.2, sig_matrix=sig_matrix)
+    lhs.find_candidates()
 
 
 if __name__ == '__main__':
