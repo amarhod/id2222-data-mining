@@ -1,6 +1,4 @@
-
-class LHS():
-
+class LSH():
     def __init__(self, threashold, sig_matrix, band=20, row=5):
         self.threashold = threashold
         self.sig_matrix = sig_matrix
