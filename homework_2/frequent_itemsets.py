@@ -27,7 +27,6 @@ class FrequentItemsets():
             else:
                 unique_items = get_unique_items_from_itemsets(item_frequency)
                 possible_itemsets = list(itertools.combinations(unique_items, i))
-                item_frequency = {}
                 for basket in self.baskets:
                     for possible_itemset in possible_itemsets:
                         if set(possible_itemset) <= set(basket):  # Check if possible_itemset is a subset of the basket
