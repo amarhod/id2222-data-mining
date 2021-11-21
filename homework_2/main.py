@@ -27,7 +27,8 @@ def main():
     args = get_args()
     baskets = read_basket_data(args.number_of_baskets)
     frequent_itemssets = FrequentItemsets(baskets, args.itemset_size, args.support)
-    print(f'Itemsets with support at or above {args.support}:', frequent_itemssets.itemsets)
+    print(f'There are {len(frequent_itemssets.itemsets)} itemsets with support at or above {args.support}:',
+          frequent_itemssets.itemsets)
 
 
 if __name__ == '__main__':
