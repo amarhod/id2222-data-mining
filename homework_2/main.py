@@ -1,13 +1,14 @@
 import argparse
+import timeit
 from frequent_itemsets import FrequentItemsets
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--itemset_size', nargs='?', default=2, type=int)
-    parser.add_argument('--number_of_baskets', nargs='?', default=100, type=int,
+    parser.add_argument('--itemset_size', nargs='?', default=1_000_000, type=int)
+    parser.add_argument('--number_of_baskets', nargs='?', default=100_000, type=int,
                         help='number of baskets used from the data set')
-    parser.add_argument('--support', nargs='?', default=8, type=int)
+    parser.add_argument('--support', nargs='?', default=1000, type=int)
     return parser.parse_args()
 
 
@@ -30,4 +31,7 @@ def main():
 
 
 if __name__ == '__main__':
+    time_start = timeit.default_timer()
     main()
+    time_end = timeit.default_timer()
+    print(f'Time to execute: {time_end-time_start}')
