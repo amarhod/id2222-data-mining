@@ -10,10 +10,12 @@ class FrequentItemsets():
         """Find frequency for singleton itemsets (k=1)
         """
         item_frequency = {}
-        for basket in self.baskets:
+        self.item_in_basket_mapping = {}
+        for i, basket in enumerate(self.baskets):
             for item in basket:
                 item_count = item_frequency.get((item,), 0)
                 item_frequency[(item,)] = item_count + 1
+                self.item_in_basket_mapping[(item,)] = self.item_in_basket_mapping.get((item,), []) + [i]
         return item_frequency
 
     def find_frequent_itemsets(self, k: int) -> dict[tuple, int]:
