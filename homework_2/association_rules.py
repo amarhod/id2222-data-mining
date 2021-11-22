@@ -18,17 +18,14 @@ class Associator():
                 current_size = 1
                 while current_size < len(k):
                     subsets = list(itertools.combinations(k, current_size))
-                    # print(f"Subsets {subsets}")
                     for subset in subsets:
                         left_side = tuple(sorted(subset))
                         right_side = self.get_set_without_element(k, left_side)
                         support_union = val
                         support_left_side = self.itemsets[left_side]
                         confidence = support_union / support_left_side
-                        # print(f"{left_side=}, {right_side=}, {support_union=}, {support_left_side=}, {confidence=}")
                         if confidence >= self.confidence:
                             rule = f"{left_side} -> {right_side}"
-                            # print(f"Adding rule {rule}")
                             rules.add(rule)
                     current_size += 1
         return rules
@@ -42,7 +39,8 @@ class Associator():
 
 
 if __name__ == "__main__":
-    frequent_itemsets = {(0,): 2, (4,): 4, (5,): 4, (1,): 2, (2,): 2, (0, 5): 2, (4, 5): 3, (1, 4): 2, (2, 4): 2, (2, 5): 2, (2, 4, 5): 2}
+    frequent_itemsets = {(0,): 2, (4,): 4, (5,): 4, (1,): 2, (2,): 2, (0, 5): 2, (4, 5): 3,
+                         (1, 4): 2, (2, 4): 2, (2, 5): 2, (2, 4, 5): 2}
     associator = Associator(frequent_itemsets, confidence=1)
     print(associator.rules)
     """
