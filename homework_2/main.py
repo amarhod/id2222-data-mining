@@ -30,17 +30,16 @@ def read_basket_data(number_of_baskets: int, filepath='data/T10I4D100K.dat') -> 
 def main():
     args = get_args()
     baskets = read_basket_data(args.number_of_baskets, args.dataset_path)
-    print(f"Chosen support: {args.support}, chosen confidence: {args.confidence}")
     time_start_frequent = timeit.default_timer()
     frequent_itemssets = FrequentItemsets(baskets, args.itemset_size, args.support)
     time_end_frequent = timeit.default_timer()
     association = Associator(frequent_itemssets.itemsets, args.confidence)
     time_end_association = timeit.default_timer()
-    print(f'There are {len(frequent_itemssets.itemsets)} itemsets with support at or above {args.support}:',
+    print(f'There are {len(frequent_itemssets.itemsets)} itemsets with support at or above {args.support}:\n',
           frequent_itemssets.itemsets)
-    print(f"Rules: {association.rules}")
-    print(f'Execution time to find frequent items: {time_end_frequent-time_start_frequent}')
-    print(f'Execution time to find association rules: {time_end_association-time_end_frequent}')
+    print(f"Association rules with a confidence of at least {args.confidence}:\n{association.rules}")
+    print(f'Time to find frequent items: {round(time_end_frequent-time_start_frequent, 2)}')
+    print(f'Time to find association rules: {round(time_end_association-time_end_frequent, 2)}')
 
 
 if __name__ == '__main__':
