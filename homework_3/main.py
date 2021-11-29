@@ -1,6 +1,6 @@
 from __future__ import annotations
 import argparse
-from Triest import Triest
+from triest_base import Triest
 
 
 def get_args():
@@ -31,9 +31,9 @@ def main():
     number_of_edges = args.number_of_lines
     print(f"Settings: num of edges {number_of_edges}, path {args.path}, mem size {args.memory_size}")
     edges = read_edge_data(number_of_edges=number_of_edges, filepath=args.path)
-    trist = Triest(edges, 100)
-    print(trist.current_global_estimation)
-    print(trist.current_counter_estimations)
+    trist = Triest(edges, args.memory_size)
+    print('Global estimation:', trist.current_global_estimation)
+    print('Local estimation:', trist.current_counter_estimations)
 
 
 if __name__ == "__main__":
