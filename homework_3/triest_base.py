@@ -24,7 +24,6 @@ class Triest():
         eps = max(1, val)
         for k, val in self.counters.items():
             self.current_counter_estimations[k] = round(eps * val)
-        print(f'{self.tau=}, {eps=}')
         self.current_global_estimation = round(self.tau * eps)
 
     def flip_biased_coin(self, probability):
@@ -43,15 +42,8 @@ class Triest():
                 neighbourhood.add(edge[0])
         return neighbourhood
 
-    def run(self):
-        for edge in self.stream:
-            self.t += 1
-            if self.sample_edge(edge, self.t):
-                self.update_counters("+", edge)
-                self.sample_set.add(edge)
-        self.get_estimations(self.t)
-
     def sample_edge(self, edge, t):
+        """The reservoir sampling"""
         if t <= self.memory_size:
             return True
         elif self.flip_biased_coin(self.memory_size / t) == "H":
@@ -83,6 +75,14 @@ class Triest():
             self.update_counter(op, c)
             self.update_counter(op, u)
             self.update_counter(op, v)
+
+    def run(self):
+        for edge in self.stream:
+            self.t += 1
+            if self.sample_edge(edge, self.t):
+                self.sample_set.add(edge)
+                self.update_counters("+", edge)
+        self.get_estimations(self.t)
 
 
 if __name__ == "__main__":

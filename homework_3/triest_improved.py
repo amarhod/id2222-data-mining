@@ -13,21 +13,10 @@ class TriestImproved():
         self.counters = {}
         self.t = 0
         self.tau = 0  # global counter for the estimation of number of global triangles
-        self.current_global_estimation = 0
-        self.current_counter_estimations = {}
         self.run()
 
-    def get_estimations(self, t):
-        denominator = (self.memory_size * (self.memory_size - 1) * (self.memory_size - 2))
-        val = (t * ((t - 1) * (t - 2))) / denominator
-        eps = max(1, val)
-        for k, val in self.counters.items():
-            self.current_counter_estimations[k] = round(eps * val)
-        print(f'{self.tau=}, {eps=}')
-        self.current_global_estimation = round(self.tau * eps)
-
     def flip_biased_coin(self, probability):
-        return 'H' if random.random() < probability else 'T'
+        return 'H' if random.random() <= probability else 'T'
 
     def get_neibourhood(self, graph, vertex):
         """
@@ -42,14 +31,6 @@ class TriestImproved():
                 neighbourhood.add(edge[0])
         return neighbourhood
 
-    def run(self):
-        for edge in self.stream:
-            self.t += 1
-            self.update_counters(edge)
-            if self.sample_edge(edge, self.t):
-                self.sample_set.add(edge)
-        self.get_estimations(self.t)
-
     def sample_edge(self, edge, t):
         if t <= self.memory_size:
             return True
@@ -59,10 +40,6 @@ class TriestImproved():
             return True
         return False
 
-    def update_counter(self, counter):
-        eta = ((self.t - 1) * (self.t - 2)) / (self.memory_size * (self.memory_size - 1))
-        self.counters[counter] = self.counters.get(counter, 0) + max(1, eta)
-
     def update_counters(self, edge):
         u = edge[0]
         v = edge[1]
@@ -70,14 +47,22 @@ class TriestImproved():
         n_v = self.get_neibourhood(self.sample_set, v)
         intersection = n_u.intersection(n_v)
         for c in intersection:
-            self.tau += 1
-            self.update_counter(c)
-            self.update_counter(u)
-            self.update_counter(v)
+            eta = (self.t - 1) * (self.t - 2) / (self.memory_size * (self.memory_size - 1))
+            weight = max(1, eta)
+            self.tau += weight
+            self.counters[c] = self.counters.get(c, 0) + weight
+            self.counters[u] = self.counters.get(u, 0) + weight
+            self.counters[v] = self.counters.get(v, 0) + weight
 
+    def run(self):
+        for edge in self.stream:
+            self.t += 1
+            self.update_counters(edge)
+            if self.sample_edge(edge, self.t):
+                self.sample_set.add(edge)
 
 if __name__ == '__main__':
     edges = [(1, 2), (2, 3), (32, 3), (3, 4), (1, 2), (2, 3), (32, 3), (3, 4), (1, 2), (2, 3), (32, 3), (2, 4)]
     trist = TriestImproved(edges, 12)
-    print(trist.current_global_estimation)
-    print(trist.current_counter_estimations)
+    print(trist.tau)
+    print(trist.counters)

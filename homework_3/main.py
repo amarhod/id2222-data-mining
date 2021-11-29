@@ -31,14 +31,17 @@ def read_edge_data(number_of_edges: int, filepath) -> set:
 def main():
     args = get_args()
     number_of_edges = args.number_of_lines
-    print(f'Settings: Length of stream = {number_of_edges}, Memory size = {args.memory_size}')
+    print(f'Settings: Length of stream = {number_of_edges}, Memory size = {args.memory_size}, Path = {args.path}')
     edges = read_edge_data(number_of_edges=number_of_edges, filepath=args.path)
     if args.improved:
-        trist = TriestImproved(edges, args.memory_size)
+        triest = TriestImproved(edges, args.memory_size)
+        print('Global estimation triest improved:', round(triest.tau))
     else:
-        trist = Triest(edges, args.memory_size)
-    print('Global estimation:', trist.current_global_estimation)
-
+        triest = Triest(edges, args.memory_size)
+        print('Global estimation triest base:', round(triest.current_global_estimation))
+        
+    # triest_true = Triest(edges, args.number_of_lines)
+    # print('True value:', triest_true.current_global_estimation)
 
 if __name__ == '__main__':
     main()
