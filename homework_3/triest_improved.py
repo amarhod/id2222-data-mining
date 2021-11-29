@@ -5,8 +5,7 @@ http://www.kdd.org/kdd2016/papers/files/rfp0465-de-stefaniA.pdf
 import random
 
 
-class Triest():
-
+class TriestImproved():
     def __init__(self, stream, memory_size):
         self.stream = stream
         self.memory_size = memory_size
@@ -28,7 +27,7 @@ class Triest():
         self.current_global_estimation = round(self.tau * eps)
 
     def flip_biased_coin(self, probability):
-        return "H" if random.random() < probability else "T"
+        return 'H' if random.random() < probability else 'T'
 
     def get_neibourhood(self, graph, vertex):
         """
@@ -46,47 +45,39 @@ class Triest():
     def run(self):
         for edge in self.stream:
             self.t += 1
+            self.update_counters(edge)
             if self.sample_edge(edge, self.t):
-                self.update_counters("+", edge)
                 self.sample_set.add(edge)
         self.get_estimations(self.t)
 
     def sample_edge(self, edge, t):
         if t <= self.memory_size:
             return True
-        elif self.flip_biased_coin(self.memory_size / t) == "H":
+        elif self.flip_biased_coin(self.memory_size / t) == 'H':
             edge_to_remove = random.sample(self.sample_set, 1)[0]
             self.sample_set.remove(edge_to_remove)
-            self.update_counters("-", edge_to_remove)
             return True
         return False
 
-    def update_counter(self, op, counter):
-        if op == "+":
-            self.counters[counter] = self.counters.get(counter, 0) + 1
-        else:
-            self.counters[counter] = self.counters.get(counter, 0) - 1
-        if self.counters[counter] <= 0:
-            del self.counters[counter]
+    def update_counter(self, counter):
+        eta = ((self.t - 1) * (self.t - 2)) / (self.memory_size * (self.memory_size - 1))
+        self.counters[counter] = self.counters.get(counter, 0) + max(1, eta)
 
-    def update_counters(self, op, edge):
+    def update_counters(self, edge):
         u = edge[0]
         v = edge[1]
         n_u = self.get_neibourhood(self.sample_set, u)
         n_v = self.get_neibourhood(self.sample_set, v)
         intersection = n_u.intersection(n_v)
         for c in intersection:
-            if op == "+":
-                self.tau += 1
-            else:
-                self.tau -= 1
-            self.update_counter(op, c)
-            self.update_counter(op, u)
-            self.update_counter(op, v)
+            self.tau += 1
+            self.update_counter(c)
+            self.update_counter(u)
+            self.update_counter(v)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     edges = [(1, 2), (2, 3), (32, 3), (3, 4), (1, 2), (2, 3), (32, 3), (3, 4), (1, 2), (2, 3), (32, 3), (2, 4)]
-    trist = Triest(edges, 12)
+    trist = TriestImproved(edges, 12)
     print(trist.current_global_estimation)
     print(trist.current_counter_estimations)
