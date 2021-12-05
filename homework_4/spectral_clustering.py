@@ -15,18 +15,6 @@ def affinity(u, v, sig=1):
     return math.exp(- a / b)
 
 
-def read_edge_data(filepath: str) -> list:
-    with open(filepath) as f:
-        lines = f.readlines()
-    edge_list = []
-    for i, line in enumerate(lines):
-        line_split = line.strip().split(',')
-        u = int(line_split[0]) - 1
-        v = int(line_split[1]) - 1
-        edge_list.append((u, v))
-    return edge_list
-
-
 def get_adjacency_matrix(edges: list):
     edges = np.array(edges)
     matrix = np.zeros((edges.max() + 1, edges.max() + 1))
@@ -54,9 +42,11 @@ def get_diagonal_matrix(affinity_matrix):
 
 def main():
     edge_list = [(0, 1), (0, 4), (1, 4), (2, 1), (2, 3), (3, 5), (4, 3)]
-    adj_matrix = get_affinity_matrix(edge_list)
-    print(adj_matrix)
-    eigenvalues = np.linalg.eig(adj_matrix)
+    A = get_affinity_matrix(edge_list)
+    print(A)
+    D = get_diagonal_matrix(A)
+    print(D)
+    eigenvalues = np.linalg.eig(A)
     print(eigenvalues)
 
 
