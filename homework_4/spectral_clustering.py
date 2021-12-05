@@ -9,10 +9,13 @@ from sklearn.cluster import KMeans
 
 
 class SpectralClustering():
-    def __init__(self, edges: list, k: int) -> None:
+    def __init__(self, edges: list, k: int, affinity=False) -> None:
         self.edges = np.array(edges)
         self.k = k
-        self.A = self.get_affinity_matrix()
+        if affinity:  # Decides if we use an adjacency or affinity matrix
+            self.A = self.get_affinity_matrix()
+        else:
+            self.A = self.get_adjacency_matrix()
         self.D = np.diag(np.sum(self.A, axis=1))
         self.L = np.dot(np.dot(np.linalg.inv(np.sqrt(self.D)), self.A), np.linalg.inv(np.sqrt(self.D)))
         self.X = self.get_k_eigenvectors(self.L, self.k)
@@ -39,9 +42,10 @@ class SpectralClustering():
         return Y
 
     def get_adjacency_matrix(self) -> np.ndarray:
-        matrix = np.zeros((self.edges.max() + 1, self.edges.max() + 1))
-        matrix[self.edges[:, 0], self.edges[:, 1]] = 1
-        matrix[self.edges[:, 1], self.edges[:, 0]] = 1
+        matrix = np.zeros((self.edges.max(), self.edges.max()))
+        for u, v in self.edges:
+            matrix[u-1, v-1] = 1
+            matrix[v-1, u-1] = 1
         return matrix
 
 
@@ -56,10 +60,6 @@ def affinity(u, v, sig=1) -> float:
 def main():
     edge_list = [(1, 2), (1, 3), (2, 5), (3, 2), (3, 4), (4, 6), (5, 4)]
     SC = SpectralClustering(edge_list, 2)
-    print(SC.A)
-    print(SC.D)
-    print(SC.X)
-    print(SC.Y)
     print(SC.cluster_labels)
 
 
