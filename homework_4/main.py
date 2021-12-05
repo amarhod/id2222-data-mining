@@ -1,5 +1,6 @@
 from __future__ import annotations
 import argparse
+from spectral_clustering import SpectralClustering
 
 
 def get_args():
@@ -24,7 +25,8 @@ def read_edge_data(filepath: str) -> list:
 def main():
     args = get_args()
     edge_list = read_edge_data(args.path)
-    print(edge_list)
+    sc = SpectralClustering(edge_list, 3)
+    print(sc.cluster_labels)
 
 
 if __name__ == '__main__':
