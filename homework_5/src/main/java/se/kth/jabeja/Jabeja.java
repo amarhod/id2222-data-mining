@@ -18,7 +18,11 @@ public class Jabeja {
   private int numberOfSwaps;
   private int round;
   private float T;
+  private final float T_min = 0.0001f;
+  private final double alpha;
+  private int roundCounter = 0;
   private boolean resultFileCreated = false;
+  private final boolean useAlternativeAnnealing = false;
 
   //-------------------------------------------------------------------
   public Jabeja(HashMap<Integer, Node> graph, Config config) {
@@ -28,6 +32,7 @@ public class Jabeja {
     this.numberOfSwaps = 0;
     this.config = config;
     this.T = config.getTemperature();
+    this.alpha = config.getAlpha();
   }
 
 
@@ -46,16 +51,44 @@ public class Jabeja {
   }
 
   /**
-   * Simulated analealing cooling function
+   * Simulated annealing cooling function
    */
   private void saCoolDown(){
-    // TODO for second task
-    if (T > 1)
-      T -= config.getDelta();
-    if (T < 1)
-      T = 1;
+    if (useAlternativeAnnealing){
+      if (T * config.getDelta() > T_min){
+        T = T * config.getDelta();
+      }else{
+        T = T_min;
+      }
+    }else{
+      if (T > 1){  
+        T -= config.getDelta();
+      }else{
+        roundCounter++;
+        T = 1;
+      }
+      if (roundCounter == 200){
+        T = config.getTemperature();
+        roundCounter = 0;
+      }
+    }
   }
 
+    /**
+   * Alternative simulated annealing accaptance function
+   */
+  private boolean accaptanceProbability(double oldValue, double newValue){
+    if (T > 1)
+      System.out.println("ERROR: T can't be > 1 for the alternative simulated annealing");
+    double accaptanceProbability = Math.exp((newValue - oldValue) / T);
+    Random r = new Random(32);
+    if ((accaptanceProbability > r.nextDouble()) && (oldValue != newValue) && (T != T_min)){
+      return true;
+    }else{
+      return false;
+    }
+  }
+  
   /**
    * Sample and swap algorith at node p
    * @param nodeId
@@ -66,43 +99,72 @@ public class Jabeja {
 
     if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
             || config.getNodeSelectionPolicy() == NodeSelectionPolicy.LOCAL) {
-      // swap with random neighbors
-      // TODO
+      partner = findPartner(nodeId, getNeighbors(nodep));
     }
+
 
     if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
             || config.getNodeSelectionPolicy() == NodeSelectionPolicy.RANDOM) {
       // if local policy fails then randomly sample the entire graph
-      // TODO
+      if (partner == null)
+        partner = findPartner(nodeId, getSample(nodeId));
     }
 
     // swap the colors
-    // TODO
+    if (partner != null){
+      int nodepColor = nodep.getColor();
+      int nodeqColor = partner.getColor();
+      nodep.setColor(nodeqColor);
+      partner.setColor(nodepColor);
+      this.numberOfSwaps += 1;
+    }
   }
 
   public Node findPartner(int nodeId, Integer[] nodes){
 
     Node nodep = entireGraph.get(nodeId);
-
     Node bestPartner = null;
     double highestBenefit = 0;
 
-    // TODO
+    double old_value;
+    double new_value;
 
+    for (int node: nodes){
+      Node nodeq = entireGraph.get(node);
+      int degreePP = getDegree(nodep, nodep.getColor());
+      int degreeQQ = getDegree(nodeq, nodeq.getColor());
+      int degreePQ = getDegree(nodep, nodeq.getColor());
+      int degreeQP = getDegree(nodeq, nodep.getColor());
+
+      old_value = Math.pow(degreePP, alpha) + Math.pow(degreeQQ, alpha);
+      new_value = Math.pow(degreePQ, alpha) + Math.pow(degreeQP, alpha);
+      if (useAlternativeAnnealing){
+        boolean accaptance = accaptanceProbability(old_value, new_value);
+        if (accaptance){
+          bestPartner = nodeq;
+          highestBenefit = new_value;
+        }
+      }else{
+        if (((new_value * T) > old_value) && (new_value > highestBenefit)){
+          bestPartner = nodeq;
+          highestBenefit = new_value;
+        }
+      }
+    }
     return bestPartner;
   }
 
   /**
-   * The the degreee on the node based on color
+   * The degree on the node based on color
    * @param node
    * @param colorId
    * @return how many neighbors of the node have color == colorId
    */
   private int getDegree(Node node, int colorId){
     int degree = 0;
-    for(int neighborId : node.getNeighbours()){
+    for (int neighborId : node.getNeighbours()){
       Node neighbor = entireGraph.get(neighborId);
-      if(neighbor.getColor() == colorId){
+      if (neighbor.getColor() == colorId){
         degree++;
       }
     }
