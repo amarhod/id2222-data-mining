@@ -18,7 +18,9 @@ public class Jabeja {
   private int numberOfSwaps;
   private int round;
   private float T;
-  private final float alpha;
+  private final float T_min = 0.0001f;
+  private final double alpha;
+  private int roundCounter = 0;
   private boolean resultFileCreated = false;
   private final boolean useAlternativeAnnealing = false;
 
@@ -53,12 +55,22 @@ public class Jabeja {
    */
   private void saCoolDown(){
     if (useAlternativeAnnealing){
-      T = T * config.getDelta();
+      if (T * config.getDelta() > T_min){
+        T = T * config.getDelta();
+      }else{
+        T = T_min;
+      }
     }else{
-      if (T > 1)
-      T -= config.getDelta();
-      if (T < 1)
-      T = 1;
+      if (T > 1){  
+        T -= config.getDelta();
+      }else{
+        roundCounter++;
+        T = 1;
+      }
+      if (roundCounter == 200){
+        T = config.getTemperature();
+        roundCounter = 0;
+      }
     }
   }
 
@@ -70,7 +82,7 @@ public class Jabeja {
       System.out.println("ERROR: T can't be > 1 for the alternative simulated annealing");
     double accaptanceProbability = Math.exp((newValue - oldValue) / T);
     Random r = new Random(32);
-    if (accaptanceProbability > r.nextDouble()){
+    if ((accaptanceProbability > r.nextDouble()) && (oldValue != newValue) && (T != T_min)){
       return true;
     }else{
       return false;
@@ -124,18 +136,15 @@ public class Jabeja {
       int degreePQ = getDegree(nodep, nodeq.getColor());
       int degreeQP = getDegree(nodeq, nodep.getColor());
 
-
+      old_value = Math.pow(degreePP, alpha) + Math.pow(degreeQQ, alpha);
+      new_value = Math.pow(degreePQ, alpha) + Math.pow(degreeQP, alpha);
       if (useAlternativeAnnealing){
-        old_value = degreePP + degreeQQ;
-        new_value = degreePQ + degreeQP;
         boolean accaptance = accaptanceProbability(old_value, new_value);
         if (accaptance){
           bestPartner = nodeq;
           highestBenefit = new_value;
         }
       }else{
-        old_value = Math.pow(degreePP, alpha) + Math.pow(degreeQQ, alpha);
-        new_value = Math.pow(degreePQ, alpha) + Math.pow(degreeQP, alpha);
         if (((new_value * T) > old_value) && (new_value > highestBenefit)){
           bestPartner = nodeq;
           highestBenefit = new_value;
