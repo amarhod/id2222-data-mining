@@ -18,6 +18,7 @@ public class Jabeja {
   private int numberOfSwaps;
   private int round;
   private float T;
+  private float alpha;
   private boolean resultFileCreated = false;
 
   //-------------------------------------------------------------------
@@ -28,6 +29,7 @@ public class Jabeja {
     this.numberOfSwaps = 0;
     this.config = config;
     this.T = config.getTemperature();
+    this.alpha = config.getAlpha();
   }
 
 
@@ -66,18 +68,26 @@ public class Jabeja {
 
     if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
             || config.getNodeSelectionPolicy() == NodeSelectionPolicy.LOCAL) {
-      // swap with random neighbors
-      // TODO
+      partner = findPartner(nodeId, getNeighbors(nodep));
     }
+
 
     if (config.getNodeSelectionPolicy() == NodeSelectionPolicy.HYBRID
             || config.getNodeSelectionPolicy() == NodeSelectionPolicy.RANDOM) {
       // if local policy fails then randomly sample the entire graph
-      // TODO
+      if(partner == null)
+        partner = findPartner(nodeId, getSample(nodeId));
     }
 
     // swap the colors
-    // TODO
+    if(partner != null){
+      int nodepColor = nodep.getColor();
+      int nodeqColor = partner.getColor();
+      nodep.setColor(nodeqColor);
+      partner.setColor(nodepColor);
+      this.numberOfSwaps += 1;
+    }
+    saCoolDown();
   }
 
   public Node findPartner(int nodeId, Integer[] nodes){
@@ -86,9 +96,20 @@ public class Jabeja {
 
     Node bestPartner = null;
     double highestBenefit = 0;
+    for(int node: nodes){
+      Node nodeq = entireGraph.get(node);
+      int degreePP = getDegree(nodep, nodep.getColor());
+      int degreeQQ = getDegree(nodeq, nodeq.getColor());
+      double old_value = Math.pow(degreePP, alpha) + Math.pow(degreeQQ, alpha);
+      int degreePQ = getDegree(nodep, nodeq.getColor());
+      int degreeQP = getDegree(nodeq, nodep.getColor());
+      double new_value = Math.pow(degreePQ, alpha) + Math.pow(degreeQP, alpha);
 
-    // TODO
-
+      if(((new_value * T) > old_value) && (new_value > highestBenefit)){
+        bestPartner = nodeq;
+        highestBenefit = new_value;
+      }
+    }
     return bestPartner;
   }
 
