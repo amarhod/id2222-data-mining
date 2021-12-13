@@ -23,6 +23,7 @@ public class Jabeja {
   private int roundCounter = 0;
   private boolean resultFileCreated = false;
   private final boolean useAlternativeAnnealing = false;
+  private final boolean useReset = true; //Can only be used with the first SA implementation (i.e. useAlternativeAnnealing = false)
 
   //-------------------------------------------------------------------
   public Jabeja(HashMap<Integer, Node> graph, Config config) {
@@ -67,7 +68,7 @@ public class Jabeja {
         roundCounter++;
         T = 1;
       }
-      if (roundCounter == 200){
+      if (useReset && roundCounter == 200){
         T = config.getTemperature();
         roundCounter = 0;
       }
@@ -82,7 +83,9 @@ public class Jabeja {
       System.out.println("ERROR: T can't be > 1 for the alternative simulated annealing");
     double accaptanceProbability = Math.exp((newValue - oldValue) / T);
     Random r = new Random(32);
-    if ((accaptanceProbability > r.nextDouble()) && (oldValue != newValue) && (T != T_min)){
+    if (useReset && (T == T_min)) //No bad swaps allowed after T reaches T_min
+      return false;
+    if ((accaptanceProbability > r.nextDouble()) && (oldValue != newValue)){
       return true;
     }else{
       return false;
